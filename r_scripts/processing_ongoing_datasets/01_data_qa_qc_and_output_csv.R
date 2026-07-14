@@ -1,4 +1,4 @@
-# Last revision date: 2025-12-30
+# Last revision date: 2026-07-14
 # Author: Gabriel Kamener
 # Author email:gkamener@fiu.edu
 # Organization:
@@ -19,8 +19,8 @@
 # metadata. 
 
 # Note this script currently uses content from a dataset update
-# (knb-lter-fce.1073.18) as an example. File paths for input/output files,
-# column specifications, and formatting of output data will need to be revised
+# (knb-lter-fce.1073.19) as an example. File paths for input/output files,
+# column specifications, and formatting of output data should be revised
 # as needed for other datasets or updates.
 
 # Load libraries
@@ -32,12 +32,10 @@ library(tidyr)
 library(stringr)
 library(EML)
 
-
 # Create project subfolders if they don't already exist
 if (!dir.exists("new_submission")) {
   dir.create("new_submission")
 }
-
 
 if (!dir.exists("data")) {
   dir.create("data")
@@ -50,8 +48,42 @@ if (!dir.exists("eml")) {
   dir.create("eml/02_final")
 }
 
+if (!dir.exists("ezeml")) {
+  dir.create("ezeml")
+}
+
+options(nwarnings = 10000)
+
 ###### Load data and metadata ###### 
-input_data <- read_csv("new_submission/knb-lter-fce.1073.18/data/LT_ND_Grahl_002.csv",
+
+# Load temp directory
+temp_dir <- tempdir()
+
+# List zip file
+zip_file <- list.files("ezeml/", pattern = "\\.zip$", full.names = TRUE)
+
+# Target the xml EML file in the zip
+target_eml_file_in_zip <- unzip(zip_file, list = TRUE) %>%
+  filter(grepl("\\.xml$", Name)) %>%
+  pull(Name)
+
+# Target the .csv data file that's in the "data" folder within the zip
+target_data_file <- unzip(zip_file, list = TRUE) %>%
+  filter(grepl("data/.*\\.csv$", Name)) %>%
+  pull(Name)
+
+# Unzip the eml file to temp directory
+eml_file <- unzip(zip_file, files = target_eml_file_in_zip, exdir = temp_dir)
+
+# Unzip the data file to temp directory
+data_file <- unzip(zip_file, files = target_data_file, exdir = temp_dir)
+
+# Load metadata from the EML file you've updated and exported from ezEML.
+# This script will check the metadata against the data file to ensure consistency,
+# and will output a data file with standardized formatting and precision.
+eml <- EML::read_eml(eml_file)
+
+input_data <- read_csv(data_file,
                        col_types = cols(
                          `SITENAME` = col_character(),
                          `Date` = col_date(format = "%Y-%m-%d"),
@@ -71,17 +103,12 @@ input_data <- read_csv("new_submission/knb-lter-fce.1073.18/data/LT_ND_Grahl_002
 # Review any problems with data loading
 problems <- problems(input_data)
 
-
-# Load  metadata to check against data
-eml <- EML::read_eml("new_submission/knb-lter-fce.1073.18/knb-lter-fce.1073.18.xml")
-
 ###### Check input data against metadata ###### 
 
 # Get date range from metadata
 date_range_metadata <- data.frame(Meta_date = c(eml$dataset$coverage$temporalCoverage$rangeOfDates$beginDate$calendarDate,
                                                 eml$dataset$coverage$temporalCoverage$rangeOfDates$endDate$calendarDate)) %>%
   mutate(Meta_date = as.Date(Meta_date))
-
 
 # Get date range from data
 date_range_data <- input_data %>%
@@ -109,7 +136,6 @@ attributes_from_metadata <- get_attributes(eml$dataset$dataTable$attributeList)$
 attribute_from_data <- as.data.frame(colnames(input_data)) %>%
   rename(Input_Attribute = `colnames(input_data)`)
 
-
 # Anti-join metadata attributes from metadata vs data. Should generate 0 rows
 # if attribute names match.
 anti_tabl_meta_to_data <- anti_join(attributes_from_metadata,
@@ -125,7 +151,7 @@ anti_data_to_table_metadata <- anti_join(attribute_from_data,
 check_input_attributes <- cbind(attribute_from_data,
                                 attributes_from_metadata) %>%
   mutate(Check = "Output attributes match metadata",
-         Pass = if_else(.[1] == .[2], TRUE, FALSE),
+         Pass = if_else(.[[1]] == .[[2]], TRUE, FALSE),
          .before = 1)
 
 # Get list of site names from metadata
@@ -156,7 +182,7 @@ check_input_site_names <- sites_from_data %>%
   cbind(.,
         sites_from_metadata) %>%
   mutate(Check = "Site names match metadata",
-         Pass = if_else(.[1] == .[2], TRUE, FALSE),
+         Pass = if_else(.[[1]] == .[[2]], TRUE, FALSE),
          .before = 1)
 
 check_input_site_names
@@ -202,7 +228,6 @@ output <- input_data %>%
          `NO3` = sprintf("%.2f", round(`NO3`, 2))
          )
 
-
 ###### Review output data ###### 
 check_output_site_names <- input_data %>%
   distinct(Output_site = SITENAME) %>%
@@ -210,7 +235,7 @@ check_output_site_names <- input_data %>%
   cbind(.,
         sites_from_metadata) %>%
   mutate(Check = "Site names match metadata",
-         Pass = if_else(.[1] == .[2], TRUE, FALSE),
+         Pass = if_else(.[[1]] == .[[2]], TRUE, FALSE),
          .before = 1)
 
 # Extract attributes from output data frame
@@ -221,7 +246,7 @@ attributes_from_output <- as.data.frame(colnames(output)) %>%
 check_output_attributes <- cbind(attributes_from_output,
                                  attributes_from_metadata) %>%
   mutate(Check = "Output attributes match metadata",
-         Pass = if_else(.[1] == .[2], TRUE, FALSE),
+         Pass = if_else(.[[1]] == .[[2]], TRUE, FALSE),
          .before = 1)
 
 # Bind and review full list of checks
@@ -239,7 +264,7 @@ review_filtered <- review %>%
 # Check that there is 1 record per site/date/time for this dataset.
 # 0 records in the result means data are as expected in this case.
 # Required grouping and the expected number of rows per group may differ
-# for a project depending on how a data were collected.
+# for a project depending on how data were collected.
 check_records <- output %>%
   # group by site name, date, and time
   group_by(SITENAME,
@@ -249,8 +274,6 @@ check_records <- output %>%
   mutate(n = n()) %>%
   # filter for groups with n not equal to 1 record
   filter(n != 1)
-
-
 
 ###### Write data to file ###### 
 write.table(output,
