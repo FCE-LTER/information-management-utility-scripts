@@ -119,15 +119,15 @@ This folder is organized to contain processing scripts, data, and metadata files
 
 44. Select the "Evaluate" option and address any warnings or errors found in the evaluation
 
-45. Repeat steps 41-45 and then select "Upload"
+45. Repeat steps 39-43 and then select "Upload"
 
 46. Review the resulting staged package and revise if needed - note that each further update to the staged package will require increasing the version number in the EML
 
-47. Repeat steps 41-47 on [EDI's production site](https://portal.edirepository.org/nis/home.jsp)
+47. Repeat steps 39-43 on [EDI's production site](https://portal.edirepository.org/nis/home.jsp), and then select "Upload"
 
 48. Save a copy of the published data to the FCE Web server
 
-49. Update material (IM notes and email correspondence) in im_notes directory
+49. Update material (IM notes and email correspondence) in **im_notes** subdirectory
 
 50. Close out of all files in the revision's directory, and copy it to the FCE LTER SharePoint
 
