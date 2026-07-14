@@ -1,0 +1,134 @@
+---
+title: "readme"
+format: html
+editor: visual
+---
+
+## Readme
+
+This folder is organized to contain processing scripts, data, and metadata files for data package submissions.
+
+## Directory Structure
+
+**data**
+
+- **output** - contains formatted output from data cleaning and formatting scripts
+
+**eml**
+
+- **01_permits** - output EML from 03_update_permits.R
+- **02_final** - contains EML file manually copied from 01_permits (with any needed manual edits) for uploading to EDI for publication
+
+**ezeml** - contains working files from ezEML for metadata and data
+
+**im_notes** - contains running IM notes and email correspondence
+
+**new_submission** - contains raw submissions from data submitter
+
+**processing_scripts** - contains scripts needed to check and format (as needed) data from new submission
+
+**qc** - contains quality-check-reporting outputs or documents as needed
+
+## IM steps to update data package
+
+1.  Login to ezEML with the FCE LTER organization’s account
+
+2.  Select from top menu “Import/Export”
+
+3.  Select “Fetch a Package from EDI”
+
+4.  Select data package scope “knb-lter-fce”
+
+5.  Select a data package scope.identifier value to fetch a revision of the data package
+
+6.  Select the most recent revision of the data package
+
+7.  Select “Get Associated Data Files”
+
+8.  Select from the top menu “EML Documents”
+
+9.  Select “Rename”
+
+10. Enter a new document name with the version number increased by 1 (e.g. if the document was “knb-lter-fce.1111.16”, then rename to “knb-lter-fce.1111.17”). Make sure there are no leading white spaces in the new name if copying from the old document name.
+
+11. Select “Rename” to save the new name
+
+12. Select “Data Package ID” from the left menu
+
+13. Increase version number of package ID by 1 (e.g. “knb-lter-fce.1111.16” to “knb-lter-fce.1111.17”)
+
+14. Select “Save and Continue”
+
+15. Select “Collaborate” from the top menu
+
+16. Select from the bottom of the page “Invite a Collaborator”
+
+17. Enter your contact information, and enter the data submitter’s name and email address
+
+18. Select “Send Invitation” to email the invitation
+
+19. Follow up with the data submitter via email to notify them that you have started a new package document and have sent them a collaboration invitation
+
+20. Submitter should update metadata in ezEML as needed and either re-upload files(s) containinig new data into ezEML or share the updated data file(s) directly with the IM via email or SharePoint
+
+21. Review package after user updates and provide feedback as needed
+
+22. Ensure Project metadata is up to date
+
+23. Select “Import/Export” from top menu
+
+24. Select “Export ezEML Data Package” menu option
+
+25. Select “Export ezEML Data Package” button
+
+26. Select the download link to download a Zip of the package
+
+27. Create an RStudio Project directory for this new revision (named after the submission date as yyyymmdd) as a subdirectory of the dataset's main directory (e.g. as folder “20251130” under the “FCE1256_Smith\_ FluorescencePARAFAC” directory)
+
+28. Copy **processing_scripts** and **im_notes** subdirectories from the directory of the previous revision into the new revision's directory; copy these from SharePoint if they are not already on local computer
+
+29. Run necessary lines in **01_data_qa_qc_and_output_csv.R** to load libraries and to generate project subdirectories
+
+30. Save the Zip file from ezEML to the **new_submission** subdirectory if the new submission was submitted through ezEML. Note that if updated data or metadata files were provided to the IM directly, those should be saved to **new_submissions**, and the Zip from ezEML should be saved to the **ezeml** subdirectory.
+
+31. Continue running **01_data_qa_qc_and_output_csv.R** to load data and metadata, check data against metadata, output a data file formatted to precision specified in metadata (e.g. round water_depth column values to two decimal places if precision is specified as “.01”).
+
+32. Run **02_compare_vs_last_revision.R** script to check the new data file against what was published in the last revision. Address any unexpected changes with data submitter as needed.
+
+33. Verify any differences between formatted output data and what was initially submitted are acceptable
+
+34. Re-upload the formatted output data file to ezEML
+
+35. Re-export the data package from ezEML and save to **ezml** subdirectory
+
+36. Run **03_update_permits.R** script to update EML from the previous step with currently applicable FCE permit information.
+
+37. Copy the EML file from **eml/01_permits** to **eml/02_final** and make any needed manual changes to the file in **02_final**
+
+38. Navigate to [EDI's staging site](https://portal-s.edirepository.org/nis/home.jsp), and login with the FCE LTER account
+
+39. Select from the TOOLS dropdown menu "Evaluate/Upload Data Packages"
+
+40. Select "Choose File" and navigate to **eml/02_final**
+
+41. Upload the EML file
+
+42. Select "Manually upload data by selecting files on my local system"
+
+43. Select the file in **data/output**
+
+44. Select the "Evaluate" option and address any warnings or errors found in the evaluation
+
+45. Repeat steps 41-45 and then select "Upload"
+
+46. Review the resulting staged package and revise if needed - note that each further update to the staged package will require increasing the version number in the EML
+
+47. Repeat steps 41-47 on [EDI's production site](https://portal.edirepository.org/nis/home.jsp)
+
+48. Save a copy of the published data to the FCE Web server
+
+49. Update material (IM notes and email correspondence) in im_notes directory
+
+50. Close out of all files in the revision's directory, and copy it to the FCE LTER SharePoint
+
+51. Update the dataset's record in the FCE database's **datatoc** table, and add records to the following tables if needed: **data_originators**, **data_origin_dtoc_jt,** **research_sites,** and **datatoc_res_sites_jt**
