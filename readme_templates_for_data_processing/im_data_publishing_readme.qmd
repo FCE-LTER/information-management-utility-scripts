@@ -101,7 +101,7 @@ This folder is organized to contain processing scripts, data, and metadata files
 
 35. Re-export the data package from ezEML and save to **ezml** subdirectory
 
-36. Run **03_update_permits.R** script to update EML from the previous step with currently applicable FCE permit information.
+36. Run **03_update_permit_metadata.R** script to update EML from the previous step with currently applicable FCE permit information.
 
 37. Copy the EML file from **eml/01_permits** to **eml/02_final** and make any needed manual changes to the file in **02_final**
 
