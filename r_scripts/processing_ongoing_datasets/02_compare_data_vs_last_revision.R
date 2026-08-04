@@ -1,4 +1,4 @@
-# Last revision date: 2025-12-30
+# Last revision date: 2026-08-04
 # Author: Gabriel Kamener
 # Author email:gkamener@fiu.edu
 # Organization:
@@ -30,6 +30,33 @@
 library(tidyverse) 
 library(EDIutils)
 
+#### Create API key and load it into system environment ####
+
+# Note: See the following link to learn about EDI's
+# Identity and Access Manager and how to create an EDI API key:
+# https://edirepository.org/resources/iam
+
+# If you created an API key, you can save it on your local computer's credential
+# storage by running the commented out code below. You should only need to run these
+# lines once per user/per computer as long as the API key is current
+#
+## First create a keyring. You will be prompted to create a password for the keyring.
+## Save the keyring password somewhere safe.
+#keyring_create(keyring = "my_keyring")
+#
+## Save the API Key. You will be prompted to enter the Key as a password
+# key_set(service = "edi",
+#        username = "edi_im_read_api_key",
+#        keyring = "my_keyring")
+#
+
+# Login with the API key
+login(key = key_get(service = "edi",
+                    username = "edi_im_read_api_key",
+                    keyring = "my_keyring"))
+
+# Relock the key
+keyring_lock("my_keyring")
 
 ###### Load data ###### 
 
