@@ -29,6 +29,7 @@
 # Load libraries
 library(tidyverse) 
 library(EDIutils)
+library(keyring)
 
 #### Create API key and load it into system environment ####
 
@@ -108,4 +109,3 @@ anti_old_to_new <- anti_join(last_rev_data,
 anti_new_to_old <- anti_join(new_data,
                              last_rev_data,
                              by = names(new_data))
-
